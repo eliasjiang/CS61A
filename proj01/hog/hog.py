@@ -108,7 +108,7 @@ def silence(score0, score1):
 
 
 def play(strategy0, strategy1, score0=0, score1=0, dice=six_sided,
-         goal=GOAL_SCORE, say=silence, feral_hogs=False):
+         goal=GOAL_SCORE, say=silence, feral_hogs=True):
     """Simulate a game and return the final scores of both players, with Player
     0's score first, and Player 1's score second.
 
@@ -128,32 +128,44 @@ def play(strategy0, strategy1, score0=0, score1=0, dice=six_sided,
     who = 0  # Who is about to take a turn, 0 (first) or 1 (second)
     # BEGIN PROBLEM 5
     "*** YOUR CODE HERE ***"
+    preGainScore = [0,0]
+    strategy = [strategy0,strategy1]
+    score = [score0,score1]
     Flag = True
     while(Flag):
         #set variable
         op = other(who)
-        strategy = eval("strategy"+str(who))
-        score = eval("score"+str(who))
-        opScore = eval("score"+str(op))
+        myStrategy = strategy[who]
+        
         
         # determine the num_rolls
-        num_rolls = strategy(score,opScore)
+        num_rolls = myStrategy(score[who],score[op])
 
 
         # take_turn
-        score += take_turn(num_rolls,opScore,dice)
+        gainScore = take_turn(num_rolls,score[op],dice)
 
-        # 
+        score[who] += gainScore
+        # feral_hogs
+
+        if(feral_hogs):
+            if(abs(num_rolls-preGainScore[who])==2):
+                score[who] += 3
+
+        preGainScore[who] = gainScore
         # is_swap
-        if(is_swap(score,opScore)):
-            score,opScore = opScore,score
+        if(is_swap(score[who],score[op])):
+            score[who],score[op] = score[op],score[who]
 
-        if(score>=goal or opScore>=goal):
+        if(score[who]>=goal or score[op]>=goal):
             Flag =False
         # who = other(who)
-        score0 = op*score + who*opScore
-        score1 = op*opScore + who*score
+        score0 = score[0]
+        score1 = score[1]
         who = other(who)
+        say = say(score0,score1)
+
+
 
 
 
@@ -161,6 +173,8 @@ def play(strategy0, strategy1, score0=0, score1=0, dice=six_sided,
     # (note that the indentation for the problem 6 prompt (***YOUR CODE HERE***) might be misleading)
     # BEGIN PROBLEM 6
     "*** YOUR CODE HERE ***"
+
+    
     # END PROBLEM 6
 
     return score0, score1
